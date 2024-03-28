@@ -1,0 +1,19 @@
+{
+    "name": "CyberHub.Brane.Editor",
+    "rootNamespace": "CyberHub.Brane.Editor",
+    "references": [
+        "GUID:9e080be906bfc1c4bb2683d498c53669",
+        "GUID:0b611528461e48e48973c1472b20956f"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
