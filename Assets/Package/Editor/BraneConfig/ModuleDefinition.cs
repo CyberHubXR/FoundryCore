@@ -45,7 +45,7 @@ namespace CyberHub.Brane.Editor
         /// <summary>
         /// Returns a list of all the services used by this module, and if they are required or not
         /// </summary>
-        public List<UsedService> GetUsedService();
+        public List<UsedService> GetUsedServices();
         
         /// <summary>
         /// Get or create an instance of a module's config object

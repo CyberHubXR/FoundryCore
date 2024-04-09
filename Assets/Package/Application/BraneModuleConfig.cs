@@ -140,15 +140,20 @@ namespace CyberHub.Brane
         {
             var config = (BraneModuleConfig) target;
 
-            showEnabledServices = EditorGUILayout.BeginFoldoutHeaderGroup(showEnabledServices, "Enabled Services");
-            if (showEnabledServices)
+            if (config.EnabledServices.Count != 0)
             {
-                EditorGUI.BeginDisabledGroup(true);
-                foreach(var service in config.EnabledServices)
-                    EditorGUILayout.LabelField(service.ToString());
-                EditorGUI.EndDisabledGroup();
+                showEnabledServices = EditorGUILayout.BeginFoldoutHeaderGroup(showEnabledServices, "Enabled Services");
+                if (showEnabledServices)
+                {
+                    EditorGUI.BeginDisabledGroup(true);
+                    foreach(var service in config.EnabledServices)
+                        EditorGUILayout.LabelField(service.ToString());
+                    EditorGUI.EndDisabledGroup();
+                }
+                EditorGUILayout.EndFoldoutHeaderGroup();
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
+
+            EditorGUILayout.Space();
 
             var prop = serializedObject.GetIterator();
             prop.Next(true);

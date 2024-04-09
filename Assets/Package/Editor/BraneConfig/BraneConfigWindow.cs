@@ -44,7 +44,7 @@ namespace CyberHub.Brane.Editor
             bool allServicesLoaded = true;
             foreach(var loadedModule in _moduleDefinitions)
             {
-                var usedServices = loadedModule.GetUsedService();
+                var usedServices = loadedModule.GetUsedServices();
                 foreach (var usedService in usedServices)
                 {
                     if (!loadedServices.Contains(usedService.ServiceInterface) && !usedService.optional)
@@ -151,29 +151,34 @@ namespace CyberHub.Brane.Editor
                 moduleName.style.fontSize = fontSize;
                 moduleBox.Add(moduleName);
 
-                var servicesImplemented = new Foldout();
-                servicesImplemented.value = false;
-                servicesImplemented.text = "Services Implemented";
-                servicesImplemented.tooltip = "Services that this module provides to others";
-                moduleBox.Add(servicesImplemented);
-                foreach(var service in moduleDefinition.GetProvidedServices())
-                    servicesImplemented.contentContainer.Add(new Label(service.ServiceInterface.Name));
-                
-                
-                var servicesUsed = new Foldout();
-                servicesUsed.value = false;
-                servicesUsed.text = "Services Used";
-                servicesUsed.tooltip = "Services that this module uses";
-                moduleBox.Add(servicesUsed);
-                foreach (var service in moduleDefinition.GetUsedService())
+                var providedServices = moduleDefinition.GetProvidedServices();
+                if (providedServices.Count != 0)
                 {
-                    string optionText = service.optional ? " (optional)" : "";
-                    servicesUsed.contentContainer.Add(new Label(service.ServiceInterface.Name + optionText));
+                    var servicesImplemented = new Foldout();
+                    servicesImplemented.value = false;
+                    servicesImplemented.text = "Services Provided";
+                    servicesImplemented.tooltip = "Services that this module defines and provides to others";
+                    moduleBox.Add(servicesImplemented);
+                    foreach(var service in providedServices)
+                        servicesImplemented.contentContainer.Add(new Label(service.ServiceInterface.Name));
                 }
                 
+                var servicesUsedList = moduleDefinition.GetUsedServices();
+                if (servicesUsedList.Count != 0) {
+                    var servicesUsed = new Foldout();
+                    servicesUsed.value = false;
+                    servicesUsed.text = "Services Used";
+                    servicesUsed.tooltip = "Services that this module uses";
+                    moduleBox.Add(servicesUsed);
+                    foreach (var service in servicesUsedList)
+                    {
+                        string optionText = service.optional ? " (optional)" : "";
+                        servicesUsed.contentContainer.Add(new Label(service.ServiceInterface.Name + optionText));
+                    }
+                }
                 
                 var scriptable = moduleDefinition.GetModuleConfig();
-                var scriptableField = new ObjectField("Config");
+                var scriptableField = new ObjectField("Config Object");
                 scriptableField.value = scriptable;
                 scriptableField.focusable = true;
                 scriptableField.RegisterValueChangedCallback(e =>
@@ -217,7 +222,7 @@ namespace CyberHub.Brane.Editor
                     providerList.Add(new (service, config));
                 }
                     
-                foreach (var service in module.GetUsedService())
+                foreach (var service in module.GetUsedServices())
                 {
                     if (service.optional)
                         continue;

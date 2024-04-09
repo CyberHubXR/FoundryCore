@@ -9,6 +9,8 @@ namespace CyberHub.Brane
     /// </summary>
     public class BraneCoreConfig : BraneModuleConfig
     {
+        public string AppKey = "";
+        public string OverrideApiUrl = "";
 #if UNITY_EDITOR
         public static BraneCoreConfig GetAsset()
         {
@@ -26,6 +28,11 @@ namespace CyberHub.Brane
         public override void RegisterServices(Dictionary<Type, ServiceConstructor> constructors)
         {
             
+        }
+        
+        public string GetApiUrl()
+        {
+            return string.IsNullOrWhiteSpace(OverrideApiUrl) ? "https://35.215.38.35" : OverrideApiUrl;
         }
     }
 }
