@@ -32,7 +32,7 @@ namespace CyberHub.Brane
         
         public string GetApiUrl()
         {
-            return string.IsNullOrWhiteSpace(OverrideApiUrl) ? "https://35.215.38.35" : OverrideApiUrl;
+            return string.IsNullOrWhiteSpace(OverrideApiUrl) ? "https://api.cyberhubxr.com" : OverrideApiUrl;
         }
     }
 }
