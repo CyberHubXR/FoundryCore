@@ -1,7 +1,7 @@
 {
   "name": "com.cyberhub.brane.core",
   "displayName": "Brane Core",
-  "version": "0.1.0-preview",
+  "version": "0.1.1-preview",
   "description": "Provides setup and management utilities for other Brane packages.",
   "keywords": [
     "cyberhub",
