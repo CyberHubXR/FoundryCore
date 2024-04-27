@@ -2,7 +2,6 @@
   "name": "com.cyberhub.brane.core",
   "displayName": "Brane Core",
   "version": "0.1.0-preview",
-  "unity": "2021.3",
   "description": "Provides setup and management utilities for other Brane packages.",
   "keywords": [
     "cyberhub",
