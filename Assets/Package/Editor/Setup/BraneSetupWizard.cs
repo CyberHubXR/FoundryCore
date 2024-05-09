@@ -189,6 +189,8 @@ namespace CyberHub.Brane.Setup
             refreshButton.clicked += () =>
             {
                 CheckForTasks();
+                rootVisualElement.Clear();
+                CreateGUI();
             };
             root.Add(refreshButton);
 
