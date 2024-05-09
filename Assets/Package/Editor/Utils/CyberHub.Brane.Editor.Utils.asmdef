@@ -2,7 +2,9 @@
     "name": "CyberHub.Brane.Editor.Utils",
     "rootNamespace": "CyberHub.Brane.Editor.Utils",
     "references": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
