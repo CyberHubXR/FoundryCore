@@ -7,7 +7,7 @@ using MiniJSON;
 using UnityEditor.PackageManager;
 using UnityEngine.Networking;
 
-namespace CyberHub.Brane.Editor
+namespace CyberHub.Foundry.Editor
 {
     public static class PackageManagerUtil
     {

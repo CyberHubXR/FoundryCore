@@ -1,0 +1,16 @@
+{
+    "name": "CyberHub.Foundry.Editor.Utils",
+    "rootNamespace": "CyberHub.Foundry.Editor.Utils",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

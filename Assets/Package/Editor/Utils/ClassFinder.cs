@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CyberHub.Brane.Editor
+namespace CyberHub.Foundry.Editor
 {
     public static class ClassFinder
     {

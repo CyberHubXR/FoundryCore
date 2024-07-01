@@ -1,6 +1,6 @@
 using System;
 
-namespace CyberHub.Brane.Editor
+namespace CyberHub.Foundry.Editor
 {
     public interface IServiceDefinition
     {

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace CyberHub.Brane.Editor.UIUtils
+namespace CyberHub.Foundry.Editor.UIUtils
 {
     public static class EditorUIUtils
     {

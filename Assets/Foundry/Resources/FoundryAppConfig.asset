@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8602ddc11bda5643b32e6cb7a6d2f27, type: 3}
+  m_Name: FoundryAppConfig
+  m_EditorClassIdentifier: 
+  modules:
+  - {fileID: 11400000, guid: ed48ae506a8b27b45a3c445d2a435d48, type: 2}

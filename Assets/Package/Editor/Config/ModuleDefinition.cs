@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CyberHub.Brane.Editor
+namespace CyberHub.Foundry.Editor
 {
     public struct ProvidedService
     {
@@ -50,6 +50,6 @@ namespace CyberHub.Brane.Editor
         /// <summary>
         /// Get or create an instance of a module's config object
         /// </summary>
-        public BraneModuleConfig GetModuleConfig();
+        public FoundryModuleConfig GetModuleConfig();
     }
 }
