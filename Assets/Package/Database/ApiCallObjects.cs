@@ -287,6 +287,29 @@ namespace CyberHub.Foundry.Database.API
     #endregion /user/roles
     
     #region /user/props
+
+    #region /user/props/update_reset
+    
+    [Serializable]
+    public class UpdateResetEmailRequest
+    {
+        public string reset_email;
+        
+        public bool ShouldSerializereset_email() { return !string.IsNullOrWhiteSpace(reset_email); }
+    }
+
+    #endregion /user/props/update_reset
+
+    #region /user/props/get_reset
+
+    [Serializable]
+    public class GetResetEmailResponse
+    {
+        public string reset_email;
+    }
+
+    #endregion /user/props/get_reset
+    
     
     #region /user/props/get
     

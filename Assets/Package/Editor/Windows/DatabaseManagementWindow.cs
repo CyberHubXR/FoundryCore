@@ -38,6 +38,7 @@ public class DatabaseManagementWindow : EditorWindow
     
     private VisualElement userRoleDefsView;
     private VisualElement userPropDefsView;
+    private VisualElement updateResetTemplateView;
 
     [SerializeField]
     private string selectedTab = "Login";
@@ -668,7 +669,7 @@ public class DatabaseManagementWindow : EditorWindow
         };
     }
 
-    private void DrawAccountTab(VisualElement parent)
+    private async void DrawAccountTab(VisualElement parent)
     {
         parent.Add(new Label($"Currently logged in as {session.LocalUser.username}")
         {
@@ -696,6 +697,75 @@ public class DatabaseManagementWindow : EditorWindow
         
         DrawUserEditor(parent, session.LocalUser);
         
+        if (session.LocalUser.roles.Contains("admin"))
+        {
+            parent.Add(new Label("Reset Email Template Editor") {
+                style = {
+                    fontSize = headerFontSize,
+                    unityFontStyleAndWeight = FontStyle.Bold,
+                    marginBottom = 10,
+                }
+            });
+
+            var reset_res = await session.GetResetEmail();
+
+            var resetEmailEditorBox = CreateBox(solidGrey, black);
+            var code = new TextField("HTML", -1, true, false, '*') {
+                value = reset_res.data
+            };
+
+            Label failText = null;
+            Action updateResetEmailCallback = async () =>
+            {
+                bool shouldRefresh = false;
+                try {
+                    var res = await session.UpdateResetEmail(code.value);
+                    if (!res.IsSuccess)
+                    {
+                        if (failText == null)
+                        {
+                            failText = new Label($"Reset Email Update failed: {res.error_message}")
+                            {
+                                style =
+                                {
+                                    color = Color.red
+                                }
+                            };
+                            resetEmailEditorBox.Add(failText);
+                        }
+                        else
+                            failText.text = $"Reset Email Update failed: {res.error_message}";
+                    }
+                    else
+                    {
+                        if (failText != null)
+                        {
+                            resetEmailEditorBox.Remove(failText);
+                            failText = null;
+                        }
+                        
+                        Debug.Log("Reset Email Updated successfully!");
+                        shouldRefresh = true;
+                    }
+                }
+                catch (Exception e) {
+                    Debug.LogError(e);
+                }
+
+                if (shouldRefresh) {
+                    rootVisualElement.Clear();
+                    CreateGUI();
+                }
+            };
+
+            var updateResetEmailButton = new Button(updateResetEmailCallback);
+            updateResetEmailButton.Add(new Label("Update Reset Email"));
+
+            resetEmailEditorBox.Add(code);
+            resetEmailEditorBox.Add(updateResetEmailButton);
+            parent.Add(resetEmailEditorBox);
+        }
+
         
         var logoutButton = new Button(async () =>
         {

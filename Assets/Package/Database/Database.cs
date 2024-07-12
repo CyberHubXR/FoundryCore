@@ -192,6 +192,38 @@ namespace CyberHub.Foundry.Database
             };
         }
 
+        
+        /// <summary>
+        /// Update html template for reset emails
+        /// </summary>
+        /// <param name="reset_email">Html text for email</param>
+        public async Task<ApiResult> UpdateResetEmail(string reset_email) {
+            var res = await Put<UserRolesDefsResponse>("/user/props/update_reset", new UpdateResetEmailRequest
+            {
+                reset_email = reset_email
+            });
+            
+            return new ApiResult
+            {
+                error_message = res.error_message,
+                status = res.status,
+            };
+        }
+
+         /// <summary>
+        /// Gets the current value of the reset email template
+        /// </summary>
+        public async Task<ApiResult<string>> GetResetEmail() {
+            var res = await Get<GetResetEmailResponse>("/user/props/get_reset");
+            
+            return new ApiResult<string>
+            {
+                error_message = res.error_message,
+                status = res.status,
+                data = res.data?.reset_email
+            };
+        }
+
         /// <summary>
         /// Change the current user's password.
         /// </summary>
