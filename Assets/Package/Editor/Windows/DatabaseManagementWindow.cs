@@ -108,6 +108,11 @@ public class DatabaseManagementWindow : EditorWindow
             {
                 text = "Account",
                 name = "Account"
+            },
+            new ToolbarToggle
+            {
+                text = "General",
+                name = "General"
             }
         } : new()
         {
@@ -230,6 +235,9 @@ public class DatabaseManagementWindow : EditorWindow
                 break;
             case "Account":
                 DrawAccountTab(tabContentRoot);
+                break;
+            case "General":
+                DrawGeneralTab(tabContentRoot);
                 break;
         }
     }
@@ -697,6 +705,28 @@ public class DatabaseManagementWindow : EditorWindow
         
         DrawUserEditor(parent, session.LocalUser);
         
+        var logoutButton = new Button(async () =>
+        {
+            await session.Logout(true);
+            
+            userRoleDefs = null;
+            originalUserRoleDefs = null;
+            userPropDefs = null;
+            originalUserPropDefs = null;
+            
+            rootVisualElement.Clear();
+            CreateGUI();
+        });
+        logoutButton.Add(new Label("Logout"));
+        parent.Add(logoutButton);
+    }
+
+    private void DrawUserEditor(VisualElement parent, UserDoc user)
+    {
+        parent.Add(new UserEditorElement(user, userRoleDefs, userPropDefs, session));
+    }
+
+    private async void DrawGeneralTab(VisualElement parent){
         if (session.LocalUser.roles.Contains("admin"))
         {
             parent.Add(new Label("Reset Email Template Editor") {
@@ -765,27 +795,6 @@ public class DatabaseManagementWindow : EditorWindow
             resetEmailEditorBox.Add(updateResetEmailButton);
             parent.Add(resetEmailEditorBox);
         }
-
-        
-        var logoutButton = new Button(async () =>
-        {
-            await session.Logout(true);
-            
-            userRoleDefs = null;
-            originalUserRoleDefs = null;
-            userPropDefs = null;
-            originalUserPropDefs = null;
-            
-            rootVisualElement.Clear();
-            CreateGUI();
-        });
-        logoutButton.Add(new Label("Logout"));
-        parent.Add(logoutButton);
-    }
-
-    private void DrawUserEditor(VisualElement parent, UserDoc user)
-    {
-        parent.Add(new UserEditorElement(user, userRoleDefs, userPropDefs, session));
     }
 
     private Box CreateBox(Color background, Color border)
