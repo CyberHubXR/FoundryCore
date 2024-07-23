@@ -791,8 +791,55 @@ public class DatabaseManagementWindow : EditorWindow
             var updateResetEmailButton = new Button(updateResetEmailCallback);
             updateResetEmailButton.Add(new Label("Update Reset Email"));
 
+            var wildCardHeader = new Label("Wild Cards")
+            {
+                style =
+                {
+                    fontSize = fontSize,
+                    unityFontStyleAndWeight = FontStyle.Bold,
+                    marginTop = 10,
+                }
+            };
+
+            var wildCardBox = CreateBox(solidGrey, black);
+            var username = new VisualElement
+                {
+                    style =
+                    {
+                        flexDirection = FlexDirection.Row,
+                        justifyContent = Justify.SpaceBetween,
+                    }
+                };
+                
+            var usernameLabel = new Label("username");
+            username.Add(usernameLabel);
+                
+            var usernameWildCard = new Label("{user_name}");
+            username.Add(usernameWildCard);
+
+            var resetCode = new VisualElement
+                {
+                    style =
+                    {
+                        flexDirection = FlexDirection.Row,
+                        justifyContent = Justify.SpaceBetween,
+                    }
+                };
+                
+            var resetCodeLabel = new Label("reset code");
+            resetCode.Add(resetCodeLabel);
+                
+            var resetCodeWildCard = new Label("{reset_code}");
+            resetCode.Add(resetCodeWildCard);
+
+            wildCardBox.Add(username);
+            wildCardBox.Add(resetCode);
+
+
             resetEmailEditorBox.Add(code);
             resetEmailEditorBox.Add(updateResetEmailButton);
+            resetEmailEditorBox.Add(wildCardHeader);
+            resetEmailEditorBox.Add(wildCardBox);
             parent.Add(resetEmailEditorBox);
         }
     }
