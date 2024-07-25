@@ -38,6 +38,7 @@ public class DatabaseManagementWindow : EditorWindow
     
     private VisualElement userRoleDefsView;
     private VisualElement userPropDefsView;
+    private VisualElement updateResetTemplateView;
 
     [SerializeField]
     private string selectedTab = "Login";
@@ -107,6 +108,11 @@ public class DatabaseManagementWindow : EditorWindow
             {
                 text = "Account",
                 name = "Account"
+            },
+            new ToolbarToggle
+            {
+                text = "General",
+                name = "General"
             }
         } : new()
         {
@@ -229,6 +235,9 @@ public class DatabaseManagementWindow : EditorWindow
                 break;
             case "Account":
                 DrawAccountTab(tabContentRoot);
+                break;
+            case "General":
+                DrawGeneralTab(tabContentRoot);
                 break;
         }
     }
@@ -668,7 +677,7 @@ public class DatabaseManagementWindow : EditorWindow
         };
     }
 
-    private void DrawAccountTab(VisualElement parent)
+    private async void DrawAccountTab(VisualElement parent)
     {
         parent.Add(new Label($"Currently logged in as {session.LocalUser.username}")
         {
@@ -696,7 +705,6 @@ public class DatabaseManagementWindow : EditorWindow
         
         DrawUserEditor(parent, session.LocalUser);
         
-        
         var logoutButton = new Button(async () =>
         {
             await session.Logout(true);
@@ -716,6 +724,124 @@ public class DatabaseManagementWindow : EditorWindow
     private void DrawUserEditor(VisualElement parent, UserDoc user)
     {
         parent.Add(new UserEditorElement(user, userRoleDefs, userPropDefs, session));
+    }
+
+    private async void DrawGeneralTab(VisualElement parent){
+        if (session.LocalUser.roles.Contains("admin"))
+        {
+            parent.Add(new Label("Reset Email Template Editor") {
+                style = {
+                    fontSize = headerFontSize,
+                    unityFontStyleAndWeight = FontStyle.Bold,
+                    marginBottom = 10,
+                }
+            });
+
+            var reset_res = await session.GetResetEmail();
+
+            var resetEmailEditorBox = CreateBox(solidGrey, black);
+            var code = new TextField("HTML", -1, true, false, '*') {
+                value = reset_res.data
+            };
+
+            Label failText = null;
+            Action updateResetEmailCallback = async () =>
+            {
+                bool shouldRefresh = false;
+                try {
+                    var res = await session.UpdateResetEmail(code.value);
+                    if (!res.IsSuccess)
+                    {
+                        if (failText == null)
+                        {
+                            failText = new Label($"Reset Email Update failed: {res.error_message}")
+                            {
+                                style =
+                                {
+                                    color = Color.red
+                                }
+                            };
+                            resetEmailEditorBox.Add(failText);
+                        }
+                        else
+                            failText.text = $"Reset Email Update failed: {res.error_message}";
+                    }
+                    else
+                    {
+                        if (failText != null)
+                        {
+                            resetEmailEditorBox.Remove(failText);
+                            failText = null;
+                        }
+                        
+                        Debug.Log("Reset Email Updated successfully!");
+                        shouldRefresh = true;
+                    }
+                }
+                catch (Exception e) {
+                    Debug.LogError(e);
+                }
+
+                if (shouldRefresh) {
+                    rootVisualElement.Clear();
+                    CreateGUI();
+                }
+            };
+
+            var updateResetEmailButton = new Button(updateResetEmailCallback);
+            updateResetEmailButton.Add(new Label("Update Reset Email"));
+
+            var wildCardHeader = new Label("Wild Cards")
+            {
+                style =
+                {
+                    fontSize = fontSize,
+                    unityFontStyleAndWeight = FontStyle.Bold,
+                    marginTop = 10,
+                }
+            };
+
+            var wildCardBox = CreateBox(solidGrey, black);
+            var username = new VisualElement
+                {
+                    style =
+                    {
+                        flexDirection = FlexDirection.Row,
+                        justifyContent = Justify.SpaceBetween,
+                    }
+                };
+                
+            var usernameLabel = new Label("username");
+            username.Add(usernameLabel);
+                
+            var usernameWildCard = new Label("{user_name}");
+            username.Add(usernameWildCard);
+
+            var resetCode = new VisualElement
+                {
+                    style =
+                    {
+                        flexDirection = FlexDirection.Row,
+                        justifyContent = Justify.SpaceBetween,
+                    }
+                };
+                
+            var resetCodeLabel = new Label("reset code");
+            resetCode.Add(resetCodeLabel);
+                
+            var resetCodeWildCard = new Label("{reset_code}");
+            resetCode.Add(resetCodeWildCard);
+
+            wildCardBox.Add(username);
+            wildCardBox.Add(resetCode);
+
+
+            resetEmailEditorBox.Add(code);
+            resetEmailEditorBox.Add(updateResetEmailButton);
+            resetEmailEditorBox.Add(wildCardHeader);
+            resetEmailEditorBox.Add(wildCardBox);
+            parent.Add(resetEmailEditorBox);
+        }
     }
 
     private Box CreateBox(Color background, Color border)
