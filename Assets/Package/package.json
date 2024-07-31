@@ -1,7 +1,7 @@
 {
   "name": "com.cyberhub.foundry.core",
   "displayName": "Foundry Core",
-  "version": "0.5.0-preview",
+  "version": "0.5.1-preview",
   "description": "Provides an sdk for Foundry Networking & Database services.",
   "keywords": [
     "cyberhub",

@@ -38,7 +38,7 @@ namespace CyberHub.Foundry.Setup
                 },
                 disableAfterAction = false
             };
-            appKeyTask.SetTextDescription("The app key is required to connect to the Foundry service.");
+            appKeyTask.SetTextDescription("An app key is required to connect to the Foundry service.");
             settings.Add(appKeyTask);
         
             lists.Add(settings);
