@@ -9,6 +9,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using CyberHub.Foundry;
+using CyberHub.Foundry.Database;
 using Foundry.Core.Serialization;
 using Foundry.Package.Networking.Scripts;
 using UnityEngine;
@@ -34,6 +35,7 @@ namespace Foundry.Networking
         public bool autoStart = true;
 
         public string roomKey = "default";
+        private string sectorInstanceId = "";
         public GameObject playerPrefab;
 
         public SpawnMethod SpawnMethod;
@@ -98,9 +100,9 @@ namespace Foundry.Networking
 
         private async void OnDestroy()
         {
-            var rk = roomKey;
+            var sid = sectorInstanceId;
             var sock = socket;
-            await StopSessionInternal(sock, rk);
+            await StopSessionInternal(sock, sid);
         }
 
         public void OnPlayerLeft(int player)
@@ -144,7 +146,7 @@ namespace Foundry.Networking
                 
                 MemoryStream stream = new();
                 using var writer = new BinaryWriter(stream);
-                new StringSerializer().Serialize(roomKey, writer);
+                new StringSerializer().Serialize(sectorInstanceId, writer);
                 State.GenerateEntitiesDelta(writer);
 
                 socket.SendMessage(new NetworkMessage
@@ -161,11 +163,26 @@ namespace Foundry.Networking
         public async Task StartSession()
         {
             connected = false;
-            var foundryConfig = FoundryApp.GetConfig<FoundryCoreConfig>();
-            socket = await FoundryWebSocket.Connect(new Uri(foundryConfig.GetNetworkingUrl()));
+            
+            var database = await DatabaseSession.GetActive();
+            var sectorInfo = await database.ResolveSector(roomKey);
+            if (!sectorInfo.IsSuccess)
+            {
+                Debug.LogError("Failed to resolve sector: " + sectorInfo.error_message);
+                return; 
+            }
 
+            sectorInstanceId = sectorInfo.data.instance_id;
+            socket = await FoundryWebSocket.Connect(new Uri($"ws://{sectorInfo.data.runtime_server_address}/"));
+            
             socket.Start();
-            socket.SendMessage(NetworkMessage.FromText("enter-sector", roomKey));
+            
+            MemoryStream stream = new();
+            using var writer = new BinaryWriter(stream);
+            new StringSerializer().Serialize(sectorInfo.data.instance_id, writer);
+            new StringSerializer().Serialize(database.SessionToken, writer);
+            
+            socket.SendMessage(NetworkMessage.FromBytes("enter-sector", stream.ToArray()));
 
             NetworkMessage enterSectorResponse = null;
             while (enterSectorResponse == null)
@@ -176,7 +193,12 @@ namespace Foundry.Networking
                     continue;
                 if (enterSectorResponse.Header != "enter-sector-res")
                 {
-                    Debug.LogWarning("Received unexpected message: " + enterSectorResponse.Header);
+                    var body = "";
+                    foreach(var c in enterSectorResponse.Stream.ToArray())
+                    {
+                        body += (char)c;
+                    }
+                    Debug.LogWarning("Received unexpected message " + enterSectorResponse.Header + ": " + body);
                     enterSectorResponse = null;
                 }
             }
@@ -286,7 +308,7 @@ namespace Foundry.Networking
             
             var vcJoinStream = new MemoryStream();
             using var vcJoinWriter = new BinaryWriter(vcJoinStream);
-            new StringSerializer().Serialize(roomKey, vcJoinWriter);
+            new StringSerializer().Serialize(sectorInstanceId, vcJoinWriter);
 
             voiceChatEndpoint = new(socket.GetIP(), 9090);
 
@@ -329,7 +351,7 @@ namespace Foundry.Networking
             if (!IsSessionConnected)
                 return;
 
-            await StopSessionInternal(socket, roomKey);
+            await StopSessionInternal(socket, sectorInstanceId);
         }
         
         public static async Task StopSessionInternal(FoundryWebSocket socket,  string roomKey)
@@ -376,8 +398,7 @@ namespace Foundry.Networking
             
             var stream = new MemoryStream();
             using var writer = new BinaryWriter(stream);
-            object roomKey = this.roomKey;
-            new StringSerializer().Serialize(roomKey, writer);
+            new StringSerializer().Serialize(sectorInstanceId, writer);
             entity.Serialize(writer);
              
             socket.SendMessage(new NetworkMessage
@@ -470,8 +491,7 @@ namespace Foundry.Networking
             
             var stream = new MemoryStream();
             await using var writer = new BinaryWriter(stream);
-            object roomKey = instance.roomKey;
-            new StringSerializer().Serialize(roomKey, writer);
+            new StringSerializer().Serialize(instance.sectorInstanceId, writer);
             writer.Write(entity.Id.Id);
             instance.socket.SendMessage(new NetworkMessage
             {
@@ -539,9 +559,9 @@ namespace Foundry.Networking
                                 object sectorKeyObj = sectorKey;
                                 new StringSerializer().Deserialize(ref sectorKeyObj, reader);
                                 sectorKey = (string) sectorKeyObj;
-                                if (sectorKey != roomKey)
+                                if (sectorKey != sectorInstanceId)
                                 {
-                                    Debug.LogWarning("Received ownership change for object in sector " + sectorKey + " but we are in sector " + roomKey);
+                                    Debug.LogWarning("Received ownership change for object in sector " + sectorKey + " but we are in sector " + sectorInstanceId);
                                     continue;
                                 }
                                 NetworkId id = new NetworkId(reader.ReadUInt64());
@@ -585,7 +605,7 @@ namespace Foundry.Networking
                                 
                                 var ostream = new MemoryStream();
                                 using var w = new BinaryWriter(ostream);
-                                new StringSerializer().Serialize(roomKey, w);
+                                new StringSerializer().Serialize(sectorInstanceId, w);
                                 w.Write(id.Id);
                                 w.Write(newOwner);
                                     
@@ -623,7 +643,7 @@ namespace Foundry.Networking
                                 new StringSerializer().Deserialize(ref sectorNameObj, reader);
                                 sectorName = (string) sectorNameObj;
                                 Players.Add(userId);
-                                Debug.Assert(sectorName == roomKey, "Got event for user entered sector " + sectorName + " but we are in sector " + roomKey);
+                                Debug.Assert(sectorName == sectorInstanceId, "Got event for user entered sector " + sectorName + " but we are in sector " + sectorInstanceId);
                                 break;
                             }
                             case "user-left-sector":
@@ -635,7 +655,7 @@ namespace Foundry.Networking
                                 new StringSerializer().Deserialize(ref sectorNameObj, reader);
                                 sectorName = (string) sectorNameObj;
                                 Players.Remove(userId);
-                                Debug.Assert(sectorName == roomKey, "Got event for user left sector " + sectorName + " but we are in sector " + roomKey);
+                                Debug.Assert(sectorName == sectorInstanceId, "Got event for user left sector " + sectorName + " but we are in sector " + sectorInstanceId);
                                 break;
                             }
                             case "join-sector-voice":

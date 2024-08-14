@@ -13,8 +13,6 @@ namespace CyberHub.Foundry
         
         [HideInInspector]
         public string OverrideDatabaseUrl = "";
-        [HideInInspector]
-        public string OverrideNetworkingUrl = "";
         
 #if UNITY_EDITOR
         public static FoundryCoreConfig GetAsset()
@@ -31,11 +29,6 @@ namespace CyberHub.Foundry
         {
             return string.IsNullOrEmpty(OverrideDatabaseUrl) ? "https://api.cyberhubxr.com" : OverrideDatabaseUrl;
         }
-        
-        public string GetNetworkingUrl()
-        {
-            return string.IsNullOrEmpty(OverrideNetworkingUrl) ? "ws://35.219.171.21:80" : OverrideNetworkingUrl;
-        }
     }
     
     #if UNITY_EDITOR
@@ -46,13 +39,11 @@ namespace CyberHub.Foundry
         
         private UnityEditor.SerializedProperty appKey;
         private UnityEditor.SerializedProperty overrideDatabaseUrl;
-        private UnityEditor.SerializedProperty overrideNetworkingUrl;
 
         public void OnEnable()
         {
             appKey = serializedObject.FindProperty("AppKey");
             overrideDatabaseUrl = serializedObject.FindProperty("OverrideDatabaseUrl");
-            overrideNetworkingUrl = serializedObject.FindProperty("OverrideNetworkingUrl");
         }
 
         public override void OnInspectorGUI()
@@ -63,7 +54,6 @@ namespace CyberHub.Foundry
             if (showAdvanced)
             {
                 UnityEditor.EditorGUILayout.PropertyField(overrideDatabaseUrl);
-                UnityEditor.EditorGUILayout.PropertyField(overrideNetworkingUrl);
             }
 
             serializedObject.ApplyModifiedProperties();

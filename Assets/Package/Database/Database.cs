@@ -21,6 +21,7 @@ namespace CyberHub.Foundry.Database
         private Dictionary<string, UserPropertyDef> userPropertyDefs = new();
         
         private string sessionToken = "";
+        public string SessionToken => sessionToken;
         private DateTime sessionTokenExpiresAt;
         
         private HttpClient httpClient;
@@ -784,6 +785,17 @@ namespace CyberHub.Foundry.Database
             };
         }
         
+        
+        /// <summary>
+        /// Attempt to get the info for an instance of a sector with the provided name
+        /// </summary>
+        /// <param name="sectorName"></param>
+        /// <returns>Sector instance id, and runtime server IP</returns>
+        public async Task<ApiResult<SectorResolveResponse>> ResolveSector(string sectorName)
+        {
+            return await Get<SectorResolveResponse>($"/sector/resolve?sector_name={sectorName}");
+        }
+        
         #region Http Methods
 
         public class ApiResult
@@ -973,5 +985,6 @@ namespace CyberHub.Foundry.Database
             }
         }
         #endregion
+
     }
 }

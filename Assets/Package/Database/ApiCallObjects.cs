@@ -410,6 +410,23 @@ namespace CyberHub.Foundry.Database.API
     #endregion /user/props
     
     #endregion /user
+
+    #region /sector
+
+    #region /sector/resolve
     
+    /// /sector/resolve is a get request, with one required query parameter: sector_name.
+    
+    [Serializable]
+    public class SectorResolveResponse
+    {
+        public string runtime_server_address;
+        public string instance_id;
+        public string sector_name;
+    }
+    
+    #endregion /sector/resolve
+
+    #endregion /sector
     
 }
