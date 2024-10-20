@@ -86,7 +86,18 @@ namespace CyberHub.Foundry.Database.API
         public TokenResponse session_token;
         public TokenResponse refresh_token;
     }
-    
+
+    #endregion
+
+    #region /auth/tokenlogin
+
+    [Serializable]
+    public class AuthTokenLoginRequest
+    {
+        public string app_key;
+        public string token;
+    }
+
     #endregion
 
     #region /auth/reset
