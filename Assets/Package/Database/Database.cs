@@ -93,6 +93,7 @@ namespace CyberHub.Foundry.Database
                 username = username,
                 password = password
             };
+
             var response = await Post<AuthLoginResponse>("/auth/login", req);
             if (response.status == 200)
             {
@@ -133,8 +134,9 @@ namespace CyberHub.Foundry.Database
             var req = new AuthTokenLoginRequest
             {
                 app_key = config.AppKey,
-                token = token
+                login_token = token,
             };
+
             var response = await Post<AuthLoginResponse>("/auth/tokenlogin", req);
             if (response.status == 200)
             {

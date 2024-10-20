@@ -95,7 +95,7 @@ namespace CyberHub.Foundry.Database.API
     public class AuthTokenLoginRequest
     {
         public string app_key;
-        public string token;
+        public string login_token;
     }
 
     #endregion
