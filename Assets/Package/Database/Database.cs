@@ -93,6 +93,7 @@ namespace CyberHub.Foundry.Database
                 username = username,
                 password = password
             };
+
             var response = await Post<AuthLoginResponse>("/auth/login", req);
             if (response.status == 200)
             {
@@ -113,6 +114,49 @@ namespace CyberHub.Foundry.Database
                 PlayerPrefs.Save();
             }
             
+            return new ApiResult
+            {
+                error_message = response.error_message,
+                status = response.status
+            };
+        }
+
+        /// <summary>
+        /// Frictionless login using a token.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>ApiResult</returns>
+        public async Task<ApiResult> TokenLogin(string token)
+        {
+            config = FoundryApp.GetConfig<FoundryCoreConfig>();
+            httpClient.BaseAddress = new Uri(config.GetDatabaseUrl());
+            Debug.Assert(!string.IsNullOrWhiteSpace(config.AppKey), "Foundry App Key not set!");
+            var req = new AuthTokenLoginRequest
+            {
+                app_key = config.AppKey,
+                login_token = token,
+            };
+
+            var response = await Post<AuthLoginResponse>("/auth/tokenlogin", req);
+            if (response.status == 200)
+            {
+
+                sessionToken = response.data.session_token.token;
+                sessionTokenExpiresAt = DateTime.UnixEpoch.AddSeconds(response.data.session_token.expires_at);
+
+
+                httpClient.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", sessionToken);
+
+                var res = await UpdateSessionVariables();
+                if (!res.IsSuccess)
+                    return res;
+
+                PlayerPrefs.SetString("foundry_refresh_token", response.data.refresh_token.token);
+                PlayerPrefs.SetInt("foundry_refresh_token_expires_at", (int)response.data.refresh_token.expires_at);
+                PlayerPrefs.Save();
+            }
+
             return new ApiResult
             {
                 error_message = response.error_message,
