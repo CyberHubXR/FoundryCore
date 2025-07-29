@@ -75,18 +75,19 @@ public class DatabaseManagementWindow : EditorWindow
         header.style.alignItems = Align.Center;
         root.Add(header);
         
-        var logoData = Resources.Load<Texture2D>("brane_icon");
+        var logoData = Resources.Load<Texture2D>("foundry_logo_50"); 
         var logo = new Image();
 
         logo.image = logoData;
-        logo.style.width = 50;
-        logo.style.height = 50;
+        logo.style.width = 25;
+        logo.style.height = 25;
         logo.style.marginTop = 20;
         logo.style.marginBottom = 20;
+        logo.style.marginRight = 20;
         logo.scaleMode = ScaleMode.ScaleToFit;
         header.Add(logo);
 
-        var configTitle = new Label("Brane Database Manager");
+        var configTitle = new Label("Foundry Database Manager");
         configTitle.style.fontSize = headerFontSize;
         configTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
         configTitle.style.marginBottom = 10;
