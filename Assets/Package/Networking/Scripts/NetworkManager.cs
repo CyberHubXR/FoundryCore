@@ -295,8 +295,26 @@ namespace Foundry.Networking
                         }
 
                         break;
-                    case SpawnMethod.FixedPoint:
+                    case SpawnMethod.FixedPoint:                    
                         player = Spawn(playerPrefab, transform.position, transform.rotation);
+                        // if we have last known location and position in plyer prefs, then use those, then delete them, else 
+                        if (PlayerPrefs.HasKey("PlayerPosX"))
+                        {
+                            Debug.Log("Found Player Pos and Rot in Player Prefs, using those");
+                            var pos = new Vector3(PlayerPrefs.GetFloat("PlayerPosX"), PlayerPrefs.GetFloat("PlayerPosY"), PlayerPrefs.GetFloat("PlayerPosZ"));
+                            var rot = new Vector3(PlayerPrefs.GetFloat("PlayerRotX"), PlayerPrefs.GetFloat("PlayerRotY"), PlayerPrefs.GetFloat("PlayerRotZ"));
+                            player.transform.position = pos;
+                            player.transform.eulerAngles = rot;
+                        }
+                        // clear all the player prefs now that we have used them
+                        PlayerPrefs.DeleteKey("PlayerPosX");
+                        PlayerPrefs.DeleteKey("PlayerPosY");
+                        PlayerPrefs.DeleteKey("PlayerPosZ");
+                        PlayerPrefs.DeleteKey("PlayerRotX");
+                        PlayerPrefs.DeleteKey("PlayerRotY");
+                        PlayerPrefs.DeleteKey("PlayerRotZ");
+                        Debug.Log("Cleared Player Pos and Rot from Player Prefs");
+
                         break;
                 }
                 localPlayer = player;
