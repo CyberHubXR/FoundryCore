@@ -1,6 +1,6 @@
 # FoundryCore
 The core of the Foundry XR multiplayer framework
-A core SDK for Unity to use Foundry
+A core SDK for Unity to use Foundry multiplayer and database
 
 # Import Options Link
 Package Manager Github link : "https://github.com/FoundryXR/FoundryCore.git?path=Assets/Package"
