@@ -1,0 +1,15 @@
+{
+  "name": "com.cyberhub.foundry.core",
+  "displayName": "Foundry Core",
+  "version": "0.6.0-preview",
+  "unity": "2022.3",
+  "description": "Provides an SDK for Foundry Networking & Database services.",
+  "keywords": [
+    "cyberhub",
+    "foundry",
+    "core"
+  ],
+  "author": {
+    "name": "CyberHub XR"
+  }
+}
