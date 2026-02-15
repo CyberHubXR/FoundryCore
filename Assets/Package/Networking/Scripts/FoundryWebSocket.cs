@@ -102,6 +102,7 @@ namespace Foundry.Package.Networking.Scripts
             }
             
             manager.socket.Options.KeepAliveInterval = TimeSpan.FromSeconds(2);
+            Debug.Log($"WS CONNECT URI = {uri}");
             await manager.socket.ConnectAsync(uri, CancellationToken.None);
             return manager;
         }
