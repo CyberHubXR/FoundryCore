@@ -181,36 +181,45 @@ namespace CyberHub.Foundry.Editor
                 }
                 
                 var scriptable = moduleDefinition.GetModuleConfig();
-                var scriptableField = new ObjectField("Config Object");
-                scriptableField.value = scriptable;
-                scriptableField.focusable = true;
-                scriptableField.RegisterValueChangedCallback(e =>
-                {
-                    scriptableField.value = scriptable;
-                });
-                moduleBox.Add(scriptableField);
                 
-                var moduleConfig = moduleDefinition.GetModuleConfig();
-                var configEditor = UnityEditor.Editor.CreateEditor(moduleConfig);
-                var visualElements = configEditor.CreateInspectorGUI();
-                if (visualElements != null)
+                if (scriptable == null)
                 {
-                    moduleBox.Add(visualElements);
+                    moduleBox.Add(new HelpBox(
+                        "Missing or invalid config asset for this module.",
+                        HelpBoxMessageType.Error
+                    ));
+
+                    // IMPORTANT: skip editor cration
                     continue;
                 }
+                moduleBox.Add(new Label(
+                        $"Config Asset: {scriptable.name} ({scriptable.GetType().Name})"
+                    ));
 
-                moduleBox.Add(new IMGUIContainer(() =>
+                var configEditor = UnityEditor.Editor.CreateEditor(scriptable);
+                
+                if (configEditor != null)
                 {
-                    configEditor.OnInspectorGUI();
-                    if (EditorUtility.IsDirty(moduleConfig))
+                    var visualElements = configEditor.CreateInspectorGUI();
+                    if (visualElements != null)
                     {
-                        if (GUILayout.Button("Save"))
-                        {
-                            AssetDatabase.SaveAssetIfDirty(moduleConfig);
-                            AssetDatabase.Refresh();
-                        }
+                        moduleBox.Add(visualElements);
+                        continue;
                     }
-                }));
+
+                    moduleBox.Add(new IMGUIContainer(() =>
+                    {
+                        configEditor.OnInspectorGUI();
+                        if (EditorUtility.IsDirty(scriptable))
+                        {
+                            if (GUILayout.Button("Save"))
+                            {
+                                AssetDatabase.SaveAssetIfDirty(scriptable);
+                                AssetDatabase.Refresh();
+                            }
+                        }
+                    }));
+                }
             }
             
             var servicesTitle = new Label("Services:");
