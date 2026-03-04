@@ -12,13 +12,17 @@ namespace CyberHub.Foundry
     /// </summary>
     public abstract class FoundryModuleConfig : ScriptableObject
     {
+        // Factory delegate modules use to build service instances at startup time.
         public delegate object ServiceConstructor();
 
+        // Default location where module settings assets are stored in Unity projects.
         public const string ConfigPath = "Assets/Foundry/Settings";
         
         #if UNITY_EDITOR
         protected static T GetOrCreateAsset<T>(string assetName) where T : FoundryModuleConfig
         {
+            // Shared editor utility for module packages so each module can expose a one-click
+            // config asset without duplicating path/creation logic.
             var assetPath = Path.Join(ConfigPath, assetName);
             var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);  
             if (asset == null)
@@ -34,6 +38,8 @@ namespace CyberHub.Foundry
         [Serializable]
         public class SerializedType
         {
+            // Assembly-qualified names survive Unity serialization and let us resolve
+            // interface types after domain reloads and across editor sessions.
             [SerializeField]
             private string assemblyQualifiedName;
             
@@ -58,6 +64,8 @@ namespace CyberHub.Foundry
             public Type Type
             {
                 get {
+                    // Type.GetType can fail when assemblies move/rename. We intentionally
+                    // swallow failures here and let callers validate with assertions.
                     try
                     {
                         return Type.GetType(assemblyQualifiedName);
@@ -118,14 +126,19 @@ namespace CyberHub.Foundry
 
         internal void RegisterServices(FoundryApp instance)
         {
+            // Step 1: ask the module which services it *could* construct.
             Dictionary<Type, ServiceConstructor> constructors = new();
             RegisterServices(constructors);
             
+            // Step 2: instantiate only the services currently enabled in this config asset.
             foreach (var system in EnabledServices)
             {
                 Type systemType = system;
+                // If a type cannot be resolved (assembly rename, package removed, etc.),
+                // assert so the config can be repaired rather than silently skipping it.
                 Debug.Assert(systemType != null, $"Could not find type {system}!");
                 Debug.Assert(constructors.ContainsKey(systemType), $"{GetType().Name} did not provide a constructor for {systemType.Name}!");
+                // Constructors are deferred until now so disabled services pay zero runtime cost.
                 instance.AddService(systemType, constructors[systemType]());
                 Debug.Log("Registered service: " + systemType.FullName + " from module " + GetType().Name);
             }
@@ -190,6 +203,9 @@ namespace CyberHub.Foundry
         public override void OnInspectorGUI()
         {
             var config = (FoundryModuleConfig) target;
+
+            // Custom inspector keeps the enabled-service list visible/read-only while allowing
+            // subclasses to draw their own settings below.
 
             if (config.EnabledServices.Count != 0)
             {
