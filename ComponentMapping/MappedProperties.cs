@@ -41,6 +41,8 @@ namespace CyberHub.Foundry
         /// We attempt to cache on property lookup, this is the cached value. This is used to avoid having to do a lookup,
         /// since as of now there are no cases where we have multiple implementations of the same property active at once.
         /// </summary>
+        // Last deserialized property payload. This micro-cache avoids repeated binary
+        // deserialization when tools query the same implementation multiple times.
         private object propCache;
         
         /// <summary>
@@ -51,6 +53,8 @@ namespace CyberHub.Foundry
         public T GetProps<T>(string implementationId)
         where T: class, new()
         {
+            // Fast path: if we already deserialized this implementation into the requested
+            // type, return it directly.
             if (propCache is T cache)
                 return cache;
             
@@ -58,6 +62,8 @@ namespace CyberHub.Foundry
             {
                 if (impl.implementationId == implementationId)
                 {
+                    // BinaryFormatter is used here for legacy compatibility with existing
+                    // serialized payloads produced by older Foundry integrations.
                     var stream = new MemoryStream(impl.data);
                     BinaryFormatter bf = new();
 
@@ -67,6 +73,8 @@ namespace CyberHub.Foundry
                     }
                     catch (Exception e)
                     {
+                        // Corrupt payloads are reset so future reads start clean instead of
+                        // repeatedly throwing every time this component is inspected.
                         impl.data = new byte[0];
                         return new T();
                     }
@@ -81,6 +89,8 @@ namespace CyberHub.Foundry
         where T: class
         {
             
+            // Serialize the provider-specific settings object into a byte[] blob so this
+            // wrapper can stay implementation-agnostic.
             var stream = new MemoryStream();
             BinaryFormatter bf = new();
             bf.Serialize(stream, value);
@@ -90,11 +100,13 @@ namespace CyberHub.Foundry
             {
                 if (impl.implementationId == implementationId)
                 {
+                    // Update in place when the implementation already exists.
                     impl.data = data;
                     return;
                 }
             }
             
+            // First time this implementation is seen on the component, append a new entry.
             serializedProperties.Add(new MappedPropertyImpl()
             {
                 implementationId = implementationId,

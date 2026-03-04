@@ -10,6 +10,8 @@ namespace CyberHub.Foundry
     /// </summary>
     public class FoundryApp
     {
+        // Foundry initializes itself as soon as the type is loaded so downstream code can
+        // immediately request services without a manual bootstrap call.
         private static FoundryApp _instance = new ();
         
         /// <summary>
@@ -18,14 +20,22 @@ namespace CyberHub.Foundry
         private readonly ServiceContainer services = new();
         
         private FoundryAppConfig config;
+        // Runtime lookup table used by GetConfig<T>() to return module-specific settings quickly.
         private readonly Dictionary<Type, FoundryModuleConfig> moduleConfigs = new();
 
         internal FoundryApp()
         {
-            // Add config services
+            // The app configuration lives in a Resources folder so it can be loaded both
+            // in editor tooling and in player builds without an explicit scene reference.
             config = Resources.Load<FoundryAppConfig>("FoundryAppConfig");
             Debug.Assert(config, "FoundryAppConfig not found!");
+
+            // Each module is given a chance to register its service constructors and then
+            // instantiate only the services that are marked as enabled in project settings.
             config.RegisterServices(this);
+
+            // Cache module configs by their concrete type so call sites can query config via
+            // GetConfig<T>() without walking the modules array every time.
             foreach(var module in config.modules)
                 moduleConfigs.Add(module.GetType(), module);
         }
@@ -37,6 +47,8 @@ namespace CyberHub.Foundry
         /// <param name="service">Class instance that implements the interface</param>
         public void AddService(Type type, object service)
         {
+            // ServiceContainer does not guard against accidental overrides, so we assert here
+            // to catch duplicate registrations early during startup.
             Debug.Assert(services.GetService(type) == null, "Service implementing " + type.Name +" already exists!");
             services.AddService(type, service);
         }
@@ -49,6 +61,8 @@ namespace CyberHub.Foundry
         public object GetService(Type type)
         {
             var result = services.GetService(type);
+            // A missing service is considered an invalid app state for this API. If callers
+            // want nullable behavior they should use TryGetService.
             Debug.Assert(result != null, "Service implementing " + type.FullName + " not found!");
             return result;
         }
@@ -61,6 +75,7 @@ namespace CyberHub.Foundry
         /// <returns>true if the service was found</returns>
         public bool TryGetService(Type type, out object service)
         {
+            // Non-throwing/ non-asserting variant used by optional integrations.
             service = services.GetService(type);
             return service != null;
         }
@@ -102,6 +117,7 @@ namespace CyberHub.Foundry
         {
             if (_instance.TryGetService(typeof(T), out object s))
             {
+                // Safe because we key services by the interface type passed to TryGetService<T>().
                 service = s as T;
                 return true;
             }
@@ -118,6 +134,8 @@ namespace CyberHub.Foundry
         public static T GetConfig<T>()
         where T : FoundryModuleConfig
         {
+            // Config lookup intentionally returns null instead of asserting; modules may be
+            // optional in a project and call sites can branch based on availability.
             if(_instance.moduleConfigs.TryGetValue(typeof(T), out FoundryModuleConfig config))
                 return config as T;
             return null;
